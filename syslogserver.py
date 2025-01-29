@@ -22,26 +22,26 @@ class SyslogServer(socketserver.BaseRequestHandler):
         match = pattern.match(data)
         if match:
             # Extracting parameters
-            priority = match.group(1)  # Full priority value (e.g., 30)
-            severity = int(priority) % 8  # Severity (0-7)
-            facility = int(priority) // 8  # Facility (0-7)
+            priority = match.group(1)  
+            severity = int(priority) % 8 
+            facility = int(priority) // 8  
             
             timestamp = match.group(2)
             hostname = match.group(3)
             process = match.group(4)
             pid = int(match.group(5))
-            email = match.group(6)  # Extracted email-like field
+            email = match.group(6)  # email like field (rfc mail)
             message = match.group(7)
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()
 
-            # Insert the parsed data into the 'logs' table
+            # Insert OP (Research on how to avoid sql injection here)
             cursor.execute("""
                 INSERT INTO logs (priority, severity, facility, timestamp, hostname, process, pid, mail, message)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (priority, severity, facility, timestamp, hostname, process, pid, email, message))
 
-            # Commit the transaction and close the connection
+            
             conn.commit()
             conn.close()
 
